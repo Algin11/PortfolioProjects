@@ -1,0 +1,101 @@
+--Cases per Country
+SELECT	Country
+	,	WHO_Region
+	,	Year
+	,	Count_median
+	,	Count_min
+	,	Count_max
+		
+FROM HIV_Cases..Cases_by_country
+WHERE COUNT != 'na' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY  Year DESC, WHO_Region
+
+--Children Receiving ART
+SELECT	Country
+	,	WHO_Region
+	,	Reported_number_of_children_receiving_ART AS Number_of_children_receiving_ART
+	,	Estimated_number_of_children_needing_ART_based_on_WHO_methods_max AS Number_of_children_needing_ART
+	,	CAST(Reported_number_of_children_receiving_ART AS FLOAT) /  CAST(Estimated_number_of_children_needing_ART_based_on_WHO_methods_max AS FLOAT) Percent_children_received_ART 
+
+FROM HIV_Cases..Children_living_with_HIV
+WHERE Estimated_number_of_children_needing_ART_based_on_Who_methods_median IS NOT NULL AND Reported_number_of_children_receiving_ART IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY  WHO_Region
+
+--Count of death per country
+SELECT	Country
+	,	WHO_Region
+	,	Year
+	,	Count_median
+	,	Count_min
+	,	Count_max
+
+FROM HIV_Cases..DEATHS
+WHERE Count_median IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY YEAR DESC, WHO_Region 
+
+--People who is living with HIV
+SELECT	Country
+      ,Reported_number_of_people_receiving_ART
+      ,Estimated_number_of_people_living_with_HIV_median
+      ,Estimated_number_of_people_living_with_HIV_min
+      ,Estimated_number_of_people_living_with_HIV_max
+      ,Estimated_ART_coverage_among_people_living_with_HIV_median
+      ,Estimated_ART_coverage_among_people_living_with_HIV_min
+      ,Estimated_ART_coverage_among_people_living_with_HIV_max
+      ,WHO_Region
+
+FROM HIV_Cases..Living_with_HIV
+WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY WHO_Region
+
+--People who is living with HIV by year
+  SELECT	Country
+		,	WHO_Region
+		,	Year
+		,	Count_median
+		,	Count_min
+		,	Count_max
+		
+
+FROM HIV_Cases..Living_with_HIV_by_year
+WHERE Count != 'na' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY YEAR DESC, WHO_Region 
+
+--Prevention of mother to child transmission
+SELECT	Country
+	,	WHO_Region
+	,	Received_Antiretrovirals
+	,	Needing_antiretrovirals_median
+	,	Needing_antiretrovirals_min
+	,	Needing_antiretrovirals_max
+	,	Percentage_Recieved_median
+	,	Percentage_Recieved_min
+	,	Percentage_Recieved_max
+	
+FROM HIV_Cases..prevention_of_mother_to_child_transmission_by_country
+WHERE Received_Antiretrovirals != 'No data' AND Needing_antiretrovirals_median IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY WHO_Region
+
+--Creating table with Cases, Living with HIV, Received ART and Death
+SELECT DISTINCT LHIV.Country
+	  ,LHIV.WHO_Region
+      ,LHIV.Estimated_number_of_people_living_with_HIV_max  AS Number_of_people_living_with_HIV
+	  ,LHIV.Reported_number_of_people_receiving_ART AS Number_of_people_receiving_ART
+	  ,CAST(Reported_number_of_people_receiving_ART AS FLOAT) / CAST(Estimated_number_of_people_living_with_HIV_max AS FLOAT) AS Percent_of_people_with_ART
+	  ,D.Count_max AS Number_of_deaths 
+	  ,CAST(D.Count_max AS Float) / CAST(LHIV.Estimated_number_of_people_living_with_HIV_max  AS Float) AS Percent_died
+FROM HIV_Cases..Living_with_HIV AS LHIV
+JOIN HIV_Cases..Deaths AS D
+	ON LHIV.Country = D.COUNTRY
+WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND D.Count_max IS NOT NULL AND LHIV.WHO_Region IN ('Western Pacific', 'South-East Asia')
+ORDER BY LHIV.WHO_Region
+
+--Summary for Cases in West Pacific and South-East Asia
+SELECT	Sum(LHIV.Estimated_number_of_people_living_with_HIV_max) AS People_with_HIV
+	,	SUM(CAST(Reported_number_of_people_receiving_ART AS FLOAT)) / SUM(CAST(Estimated_number_of_people_living_with_HIV_max AS FLOAT)) AS Percent_of_people_with_ART
+	,	Sum(CAST(D.Count_max AS Float)) / SUM(CAST(LHIV.Estimated_number_of_people_living_with_HIV_max  AS Float)) AS Percent_died_with_HIV
+FROM HIV_Cases..Living_with_HIV AS LHIV
+JOIN HIV_Cases..Deaths AS D
+	ON LHIV.Country = D.COUNTRY
+WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND D.Count_max IS NOT NULL AND LHIV.WHO_Region IN ('Western Pacific', 'South-East Asia')
+
