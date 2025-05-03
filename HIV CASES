@@ -1,101 +1,311 @@
---Cases per Country
-SELECT	Country
-	,	WHO_Region
-	,	Year
-	,	Count_median
-	,	Count_min
-	,	Count_max
-		
-FROM HIV_Cases..Cases_by_country
-WHERE COUNT != 'na' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY  Year DESC, WHO_Region
+-- Checking For Duplicate
+WITH Dup1 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Reported_number_of_people_receiving_ART
+										,	Estimated_number_of_people_living_with_HIV
+                                        ,	`Estimated_ART_coverage_among_people_living_with_HIV_(%)`
+                                        ,	Estimated_number_of_people_living_with_HIV_median
+                                        ,	Estimated_number_of_people_living_with_HIV_min
+                                        ,	Estimated_number_of_people_living_with_HIV_max
+                                        ,	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_median`
+                                        ,	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_min`
+                                        ,	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_max`
+                                        ,	WHO_Region ) AS Row_Numb
+										
+FROM hiv_cases.art_coverage_by_country_clean )
 
---Children Receiving ART
-SELECT	Country
-	,	WHO_Region
-	,	Reported_number_of_children_receiving_ART AS Number_of_children_receiving_ART
-	,	Estimated_number_of_children_needing_ART_based_on_WHO_methods_max AS Number_of_children_needing_ART
-	,	CAST(Reported_number_of_children_receiving_ART AS FLOAT) /  CAST(Estimated_number_of_children_needing_ART_based_on_WHO_methods_max AS FLOAT) Percent_children_received_ART 
+SELECT *
+FROM Dup1
+WHERE Row_Numb > 1
 
-FROM HIV_Cases..Children_living_with_HIV
-WHERE Estimated_number_of_children_needing_ART_based_on_Who_methods_median IS NOT NULL AND Reported_number_of_children_receiving_ART IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY  WHO_Region
+WITH Dup2 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Reported_number_of_children_receiving_ART
+										,	Estimated_number_of_children_needing_ART_methods
+                                        ,	`Estimated_ART_coverage_among_children_(%)`
+                                        ,	Estimated_number_of_children_needing_ART_methods_median
+                                        ,	Estimated_number_of_children_needing_ART_methods_min
+                                        ,	Estimated_number_of_children_needing_ART_methods_max
+                                        ,	`Estimated_ART_coverage_among_children_(%)_median`
+                                        ,	`Estimated_ART_coverage_among_children_(%)_min`
+                                        ,	`Estimated_ART_coverage_among_children_(%)_max`
+                                        ,	WHO_Region ) AS Row_Numb
+FROM hiv_cases.art_pediatric_coverage_by_country_clean )
 
---Count of death per country
-SELECT	Country
-	,	WHO_Region
-	,	Year
-	,	Count_median
-	,	Count_min
-	,	Count_max
+SELECT *
+FROM Dup2
+WHERE Row_Numb > 1
 
-FROM HIV_Cases..DEATHS
-WHERE Count_median IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY YEAR DESC, WHO_Region 
+WITH Dup3 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Year
+                                        ,	Count
+                                        ,	Count_median
+                                        ,	Count_min
+                                        ,	Count_max
+                                        ,	WHO_Region ) AS Row_Numb
+FROM hiv_cases.no_of_cases_adults_15_to_49_by_country_clean )
 
---People who is living with HIV
-SELECT	Country
-      ,Reported_number_of_people_receiving_ART
-      ,Estimated_number_of_people_living_with_HIV_median
-      ,Estimated_number_of_people_living_with_HIV_min
-      ,Estimated_number_of_people_living_with_HIV_max
-      ,Estimated_ART_coverage_among_people_living_with_HIV_median
-      ,Estimated_ART_coverage_among_people_living_with_HIV_min
-      ,Estimated_ART_coverage_among_people_living_with_HIV_max
-      ,WHO_Region
+SELECT *
+FROM Dup4
+WHERE Row_Numb > 1
 
-FROM HIV_Cases..Living_with_HIV
-WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY WHO_Region
+WITH Dup4 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Year
+                                        ,	Count
+                                        ,	Count_median
+                                        ,	Count_min
+                                        ,	Count_max
+                                        ,	WHO_Region ) AS Row_Numb
+FROM hiv_cases.no_of_deaths_by_country_clean )
 
---People who is living with HIV by year
-  SELECT	Country
-		,	WHO_Region
-		,	Year
-		,	Count_median
-		,	Count_min
-		,	Count_max
-		
+SELECT *
+FROM Dup4
+WHERE Row_Numb > 1
 
-FROM HIV_Cases..Living_with_HIV_by_year
-WHERE Count != 'na' AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY YEAR DESC, WHO_Region 
+WITH Dup5 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Year
+                                        ,	Count
+                                        ,	Count_median
+                                        ,	Count_min
+                                        ,	Count_max
+                                        ,	WHO_Region ) AS Row_Numb
+FROM hiv_cases.no_of_people_living_with_hiv_by_country_clean )
 
---Prevention of mother to child transmission
-SELECT	Country
-	,	WHO_Region
-	,	Received_Antiretrovirals
-	,	Needing_antiretrovirals_median
-	,	Needing_antiretrovirals_min
-	,	Needing_antiretrovirals_max
-	,	Percentage_Recieved_median
-	,	Percentage_Recieved_min
-	,	Percentage_Recieved_max
+SELECT *
+FROM Dup5
+WHERE Row_Numb > 1
+
+WITH Dup6 AS(
+SELECT 	*
+	,	Row_Number() OVER (PARTITION BY		Country
+										,	Received_Antiretrovirals
+                                        ,	Needing_antiretrovirals
+                                        ,	Percentage_Recieved
+                                        ,	Needing_antiretrovirals_median
+                                        ,	Needing_antiretrovirals_min
+                                        ,	Needing_antiretrovirals_max
+                                        ,	Percentage_Recieved_median
+                                        ,	Percentage_Recieved_min
+                                        ,	Percentage_Recieved_max
+                                        ,	WHO_Region ) AS Row_Numb
+FROM hiv_cases.prevention_of_mother_to_child_transmission_by_country_clean )
+
+SELECT *
+FROM Dup6
+WHERE Row_Numb > 1
+
+-- Checking For Null
+SELECT *
+FROM hiv_cases.art_coverage_by_country_clean
+WHERE 	Country IS NULL
+	OR 	Reported_number_of_people_receiving_ART IS NULL
+    OR 	Estimated_number_of_people_living_with_HIV IS NULL
+    OR	`Estimated_ART_coverage_among_people_living_with_HIV_(%)` IS NULL
+    OR 	Estimated_number_of_people_living_with_HIV_median IS NULL
+    OR	Estimated_number_of_people_living_with_HIV_min IS NULL
+    OR	Estimated_number_of_people_living_with_HIV_max IS NULL
+    OR	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_median` IS NULL
+    OR	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_min` IS NULL
+    OR	`Estimated_ART_coverage_among_people_living_with_HIV_(%)_max` IS NULL
+    OR	WHO_Region IS NULL
+
+SELECT *
+FROM hiv_cases.art_pediatric_coverage_by_country_clean
+WHERE 	Country IS NULL
+	OR 	Reported_number_of_children_receiving_ART IS NULL
+    OR	Estimated_number_of_children_needing_ART_methods IS NULL
+    OR	`Estimated_ART_coverage_among_children_(%)` IS NULL
+    OR	Estimated_number_of_children_needing_ART_methods_median IS NULL
+    OR	Estimated_number_of_children_needing_ART_methods_min IS NULL
+    OR	Estimated_number_of_children_needing_ART_methods_max IS NULL
+    OR	`Estimated_ART_coverage_among_children_(%)_median` IS NULL
+    OR	`Estimated_ART_coverage_among_children_(%)_min` IS NULL
+    OR	`Estimated_ART_coverage_among_children_(%)_max` IS NULL
+    OR	WHO_Region IS NULL
+    
+SELECT *
+FROM hiv_cases.no_of_cases_adults_15_to_49_by_country_clean
+WHERE 	Country IS NULL
+	OR	Year IS NULL
+    OR	Count IS NULL
+    OR	Count_median IS NULL
+    OR	Count_min IS NULL
+    OR	Count_max IS NULL
+    OR	WHO_Region IS NULL
+
+SELECT *
+FROM hiv_cases.no_of_deaths_by_country_clean
+WHERE 	Country IS NULL
+	OR	Year IS NULL
+    OR	Count IS NULL
+    OR	Count_median IS NULL
+    OR	Count_min IS NULL
+    OR	Count_max IS NULL
+    OR	WHO_Region IS NULL
+
+SELECT *
+FROM hiv_cases.no_of_people_living_with_hiv_by_country_clean
+WHERE 	Country IS NULL
+	OR	Year IS NULL
+    OR	Count IS NULL
+    OR	Count_median IS NULL
+    OR	Count_min IS NULL
+    OR	Count_max IS NULL
+    OR	WHO_Region IS NULL
 	
-FROM HIV_Cases..prevention_of_mother_to_child_transmission_by_country
-WHERE Received_Antiretrovirals != 'No data' AND Needing_antiretrovirals_median IS NOT NULL AND WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY WHO_Region
+SELECT *
+FROM hiv_cases.prevention_of_mother_to_child_transmission_by_country_clean
+WHERE 	Country IS NULL
+	OR	Received_Antiretrovirals IS NULL
+    OR	Needing_antiretrovirals IS NULL
+    OR	Percentage_Recieved IS NULL
+    OR	Needing_antiretrovirals_median IS NULL
+    OR	Needing_antiretrovirals_min IS NULL
+    OR	Needing_antiretrovirals_max IS NULL
+    OR	Percentage_Recieved_median IS NULL
+    OR	Percentage_Recieved_min IS NULL
+    OR	Percentage_Recieved_max IS NULL
+    OR	WHO_Region
 
---Creating table with Cases, Living with HIV, Received ART and Death
-SELECT DISTINCT LHIV.Country
-	  ,LHIV.WHO_Region
-      ,LHIV.Estimated_number_of_people_living_with_HIV_max  AS Number_of_people_living_with_HIV
-	  ,LHIV.Reported_number_of_people_receiving_ART AS Number_of_people_receiving_ART
-	  ,CAST(Reported_number_of_people_receiving_ART AS FLOAT) / CAST(Estimated_number_of_people_living_with_HIV_max AS FLOAT) AS Percent_of_people_with_ART
-	  ,D.Count_max AS Number_of_deaths 
-	  ,CAST(D.Count_max AS Float) / CAST(LHIV.Estimated_number_of_people_living_with_HIV_max  AS Float) AS Percent_died
-FROM HIV_Cases..Living_with_HIV AS LHIV
-JOIN HIV_Cases..Deaths AS D
-	ON LHIV.Country = D.COUNTRY
-WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND D.Count_max IS NOT NULL AND LHIV.WHO_Region IN ('Western Pacific', 'South-East Asia')
-ORDER BY LHIV.WHO_Region
+-- Deaths Per Year
+SELECT 
+	Country
+,	WHO_Region
+,	Year
+,	Count_median
+,	Count_min
+,	Count_max
+FROM hiv_cases.no_of_deaths_by_country_clean
+ORDER BY Country, Year DESC
 
---Summary for Cases in West Pacific and South-East Asia
-SELECT	Sum(LHIV.Estimated_number_of_people_living_with_HIV_max) AS People_with_HIV
-	,	SUM(CAST(Reported_number_of_people_receiving_ART AS FLOAT)) / SUM(CAST(Estimated_number_of_people_living_with_HIV_max AS FLOAT)) AS Percent_of_people_with_ART
-	,	Sum(CAST(D.Count_max AS Float)) / SUM(CAST(LHIV.Estimated_number_of_people_living_with_HIV_max  AS Float)) AS Percent_died_with_HIV
-FROM HIV_Cases..Living_with_HIV AS LHIV
-JOIN HIV_Cases..Deaths AS D
-	ON LHIV.Country = D.COUNTRY
-WHERE Reported_number_of_people_receiving_ART IS NOT NULL AND Estimated_number_of_people_living_with_HIV != 'Nodata' AND D.Count_max IS NOT NULL AND LHIV.WHO_Region IN ('Western Pacific', 'South-East Asia')
+-- Children Recieving ART
+SELECT 
+	Country
+,	WHO_Region
+,	Reported_number_of_children_receiving_ART AS Repoted_number_of_children_receiving_ART 
+,	Estimated_number_of_children_needing_ART_methods_median AS Number_of_children_needing_ART
+,	(Reported_number_of_children_receiving_ART/ Estimated_number_of_children_needing_ART_methods_median) * 100 AS Percentage_of_ART_received 
+FROM hiv_cases.art_pediatric_coverage_by_country_clean
+WHERE Estimated_number_of_children_needing_ART_methods_median != 0
+
+-- Cases Of HIV Per Year Per Country
+SELECT
+	Country	
+,	WHO_Region
+,	Year
+,	Count_median
+,	Count_min
+,	Count_max
+FROM hiv_cases.no_of_people_living_with_hiv_by_country_clean
+
+-- People Living With HIV AND People Receiving It
+SELECT 
+	Country
+,	WHO_Region
+,	Reported_number_of_people_receiving_ART AS Number_of_people_receiving_ART
+,	Estimated_number_of_people_living_with_HIV_median AS Number_of_people_living_with_HIV
+,	(Reported_number_of_people_receiving_ART/ Estimated_number_of_people_living_with_HIV_median ) * 100 AS Percentage_of_people_received_ART
+FROM hiv_cases.art_coverage_by_country_clean
+
+-- Mother To Child Transmission
+SELECT 
+	Country
+,	WHO_Region
+,	CAST(REPLACE(REPLACE(Received_Antiretrovirals, 'Nodata','0') , ' ','') AS FLOAT) AS Received_Antiretrovirals
+,	Needing_antiretrovirals_median AS Needing_antiretrovirals
+,	CAST(REPLACE(REPLACE(Received_Antiretrovirals, 'Nodata','0') , ' ','') AS FLOAT) / CAST(Needing_antiretrovirals_median AS FLOAT) AS Percentage_of_received_ART
+FROM hiv_cases.prevention_of_mother_to_child_transmission_by_country_clean
+
+-- Creating A Table With Number of Cases, Living With HIV, Received ART And Death
+SELECT 
+	L.Country
+,	L.Estimated_number_of_people_living_with_HIV_median AS Number_of_people_living_with_HIV
+,	L.Reported_number_of_people_receiving_ART AS  Number_of_people_receiving_ART
+,	D.Count_median AS Number_of_deaths
+,	(L.Reported_number_of_people_receiving_ART  / L.Estimated_number_of_people_living_with_HIV_median )*100 AS Percentage_of_people_received_ART
+,	( D.Count_median  / L.Estimated_number_of_people_living_with_HIV_median )*100 AS Percentage_of_deaths
+FROM hiv_cases.art_coverage_by_country_clean AS L
+JOIN hiv_cases.no_of_deaths_by_country_clean AS D
+	ON L.Country = D.Country
+
+-- Total Number Of People Living With HIV Per Region
+SELECT 
+	D.WHO_Region
+,	SUM(L.Estimated_number_of_people_living_with_HIV_median) AS Total_number_of_people_living_with_HIV
+FROM hiv_cases.art_coverage_by_country_clean AS L
+JOIN hiv_cases.no_of_deaths_by_country_clean AS D
+	ON L.Country = D.Country
+GROUP BY D.WHO_Region
+ORDER BY Total_number_of_people_living_with_HIV DESC
+
+-- Total Number Of People Living With HIV, Received ART, Deaths With Percentage
+SELECT 
+	D.WHO_Region
+,	SUM(L.Estimated_number_of_people_living_with_HIV_median) AS Total_number_of_people_living_with_HIV
+,	SUM(L.Reported_number_of_people_receiving_ART) AS Total_number_of_received_ART
+,	SUM(D.Count_median) AS Total_number_of_deaths
+,	(SUM(L.Reported_number_of_people_receiving_ART)  / SUM(L.Estimated_number_of_people_living_with_HIV_median))*100 AS Percentage_of_people_received_ART
+,	(SUM(D.Count_median)  / SUM(L.Estimated_number_of_people_living_with_HIV_median))*100 AS Percentage_of_people_received_ART
+FROM hiv_cases.art_coverage_by_country_clean AS L
+JOIN hiv_cases.no_of_deaths_by_country_clean AS D
+	ON L.Country = D.Country
+GROUP BY D.WHO_Region
+ORDER BY Total_number_of_people_living_with_HIV DESC
+
+-- Top 5 Highest Country With People Living With HIV
+SELECT 
+	Country
+,	Who_Region
+,	Count_median AS Number_of_people_with_HIV
+FROM hiv_cases.no_of_people_living_with_hiv_by_country_clean 
+ORDER BY Count_median DESC
+LIMIT 5
+
+-- TOP 5 Highest Deaths Per Country
+SELECT
+	Country
+,	Who_Region
+,	Count_median AS Number_of_death
+FROM hiv_cases.no_of_deaths_by_country_clean
+ORDER BY Count_median DESC
+LIMIT 5
+
+-- Total Deaths Per Year
+SELECT 
+	YEAR
+,	SUM( Count_median) AS Number_deaths
+FROM hiv_cases.no_of_deaths_by_country_clean
+GROUP BY YEAR
+ORDER BY Number_deaths DESC
+
+-- People Living with HIV, Percentage with ART and Percentage Died with HIV In The World
+SELECT	SUM(A.Estimated_number_of_people_living_with_HIV_median) AS People_living_with_HIV
+ ,		(SUM(A.Reported_number_of_people_receiving_ART) / SUM(A.Estimated_number_of_people_living_with_HIV_median))*100 AS Percentage_with_ART
+ ,		(SUM(B.Count_median) / SUM(A.Estimated_number_of_people_living_with_HIV_median))*100 AS Death_Percentage
+FROM hiv_cases.art_coverage_by_country_clean A
+JOIN hiv_cases.no_of_deaths_by_country_clean B
+	ON A.Country = B.Country
+
+
+
+	
+
+
+
+
+
+		
+
+
+
+
+	
 
