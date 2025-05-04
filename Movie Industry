@@ -1,0 +1,133 @@
+-- Duplicate the Table For Data Manipulation
+CREATE DATABASE IF NOT EXISTS movie_industry;
+
+USE movies;
+
+CREATE TABLE movie_industry
+(		name VARCHAR(255)
+	,	rating VARCHAR(255)
+    ,	genre VARCHAR(255)
+    ,	year INT 
+    ,	released VARCHAR(255)
+    ,	score FLOAT 
+    ,	votes FLOAT 
+    ,	director VARCHAR(255)
+    ,	writer VARCHAR(255)
+    ,	star VARCHAR(255)
+    ,	country VARCHAR(255)
+    ,	budget FLOAT
+    ,	gross FLOAT 
+    ,	company VARCHAR(255)
+    ,	runtime FLOAT )
+
+INSERT INTO movie_industry
+SELECT *
+FROM movies.movies
+
+-- Check For Duplicate
+WITH DUP AS (
+SELECT 	*
+	,	ROW_NUMBER() OVER (PARTITION BY 	name
+										,	rating
+                                        ,	genre
+                                        ,	year
+                                        ,	released
+                                        ,	score
+                                        ,	votes
+                                        ,	director
+                                        ,	writer
+                                        ,	star
+                                        ,	country
+                                        ,	budget
+                                        ,	gross
+                                        ,	company
+                                        ,	runtime ) AS Row_Numb
+FROM movies.movies )
+
+SELECT *
+FROM DUP
+WHERE Row_Numb > 1
+
+-- Checking For Nulls
+SELECT *
+FROM movies.movie_industry
+WHERE 	name IS NULL
+	OR	rating IS NULL
+    OR	genre IS NULL
+    OR	year IS NULL
+    OR	released IS NULL
+    OR	score IS NULL
+	OR	votes IS NULL
+    OR	director IS NULL
+    OR	writer IS NULL
+	OR	star IS NULL
+    OR	country IS NULL
+    OR	budget IS NULL
+    OR	gross IS NULL
+    OR	company IS NULL
+    OR	runtime IS NULL
+    
+-- Data Manipulation
+-- Types of Genre And Count Of Genre 
+SELECT 
+	genre
+,	COUNT(genre) AS count_genre
+FROM movies.movie_industry
+GROUP BY genre
+ORDER BY genre
+
+-- The Most Expensive Budget Movie FROM 1980 TO 1991 
+SELECT
+	Name
+,	rating
+,	genre
+,	year
+, 	director
+,	budget
+FROM movies.movie_industry
+ORDER BY budget DESC
+
+-- Longest Movies FROM 1980 TO 1991 
+SELECT
+	Name
+,	rating
+,	genre
+,	year
+, 	director
+,	runtime
+FROM movies.movie_industry
+ORDER BY runtime DESC
+
+-- Highest Movie Gross Per Year From 1980 To 1991
+SELECT	year	
+	,	gross
+    ,	name
+FROM movies.movie_industry
+WHERE gross IN ( SELECT MAX(gross)
+				FROM movies.movie_industry
+                GROUP BY YEAR )
+ORDER BY year DESC
+
+-- Total Gross of the Directors From 1980 To 1991 
+SELECT
+	director
+,	SUM(GROSS) AS Total_Gross
+FROM movies.movie_industry
+GROUP BY director
+ORDER BY Total_Gross DESC
+
+-- Total Gross Of The Company From 1980 To 1991 
+SELECT
+	company
+,	SUM(GROSS) AS Total_Gross
+FROM movies.movies
+GROUP BY company
+ORDER BY Total_Gross DESC
+
+
+
+
+
+
+
+	
