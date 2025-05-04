@@ -27,8 +27,8 @@ FROM sleep_health.sleep_health_and_lifestyle_dataset
 -- Cheking for Duplicate
 WITH DUP AS (
 SELECT	*
-	,	ROW_NUMBER() OVER (PARTITION BY 	Person_ID
-										,	Gender
+	,	ROW_NUMBER() OVER (PARTITION BY Person_ID
+					,	Gender
                                         ,	Age
                                         ,	Occupation
                                         ,	Sleep_Duration
