@@ -1,197 +1,281 @@
- --Count of total Occupations
+-- Duplication Of Table for Data Manipulation
+CREATE DATABASE IF NOT EXISTS Sleephealth;
+
+USE sleep_health;
+
+CREATE TABLE Sleephealth
+(	Person_ID INT 
+  ,	Gender VARCHAR(225)
+  ,	Age INT 
+  ,	Occupation VARCHAR(225)
+  ,	Sleep_Duration float
+  ,	Quality_of_Sleep INT 
+  ,	Physical_Activity_Level INT 
+  ,	Stress_Level INT 
+  ,	BMI_Category VARCHAR(225) 
+  ,	Blood_Pressure VARCHAR(225)
+  ,	Heart_Rate INT 
+  ,	Daily_Steps INT
+  ,	Sleep_Disorder VARCHAR(225) )
+  
+  
+INSERT INTO sleephealth
+SELECT *
+FROM sleep_health.sleep_health_and_lifestyle_dataset 
+
+-- Data Cleaning
+-- Cheking for Duplicate
+WITH DUP AS (
+SELECT	*
+	,	ROW_NUMBER() OVER (PARTITION BY 	Person_ID
+										,	Gender
+                                        ,	Age
+                                        ,	Occupation
+                                        ,	Sleep_Duration
+                                        ,	Quality_of_Sleep
+                                        ,	Physical_Activity_Level
+                                        ,	Stress_Level
+                                        ,	BMI_Category
+                                        ,	Blood_Pressure
+                                        ,	Heart_Rate
+                                        ,	Daily_Steps
+                                        ,	Sleep_Disorder ) AS Row_Numb
+FROM sleephealth )
+
+SELECT *
+FROM DUP 
+WHERE Row_Numb > 1
+
+-- Checking For Nulls 
+SELECT *
+FROM sleephealth
+WHERE	Person_ID IS NULL
+	OR	Gender IS NULL
+    OR	Age IS NULL
+	OR	Occupation IS NULL
+	OR	Sleep_Duration IS NULL
+    OR	Quality_of_Sleep IS NULL
+    OR	Physical_Activity_Level IS NULL
+    OR	Stress_Level IS NULL
+    OR	BMI_Category IS NULL
+    OR	Blood_Pressure IS NULL
+    OR	Heart_Rate IS NULL
+    OR	Daily_Steps IS NULL
+    OR	Sleep_Disorder IS NULL 
+    
+-- Updating the BMI_Category
+UPDATE sleep_health.sleep_health_and_lifestyle_dataset 
+SET BMI_Category = 'Normal'
+WHERE BMI_Category = 'Normal Weight'
+
+ -- Total Occupation
 SELECT
-		COUNT(Person_id) as count_of_total_occupation
-FROM SleepHealth..SleepHealth
+		COUNT(Person_ID) as Total_Occupation
+FROM sleep_health.sleephealth
 
-
-
--- Count Per Occupation 
+-- Number of People Per Occupation
 SELECT	
 		Occupation
-	,	COUNT(occupation) AS count_occupation
-FROM SleepHealth..SleepHealth 
+	,	COUNT(occupation) AS Number_of_people
+FROM sleep_health.sleephealth
 GROUP BY Occupation
-ORDER BY count_occupation	DESC
+ORDER BY number_of_people DESC
 
-
--- Count of BMI Category
+-- BMI Category Group By Number Of Peolple
 SELECT	
 		BMI_category
-	,	COUNT(BMI_category) AS count_BMI_category
-FROM SleepHealth..SleepHealth 
+	,	COUNT(BMI_category) AS Number_of_people
+FROM sleep_health.sleephealth
 GROUP BY   BMI_category
 
-
---Count of Age Group by Gender
-SELECT	
-		Gender
-	,	Age
-	,	COUNT(Age) AS Age_Count
-
-FROM SleepHealth..SleepHealth 
-GROUP BY Gender, Age
-ORDER BY  GENDER DESC, Age DESC
-
-
---The Average Age, Maximum and the Minimum Age Group by Gender and Occupation
+-- Occupation Group By Gender And Age
 SELECT	Occupation
 	,	Gender
-	,	COUNT(GENDER) AS count_gender
-	,	Avg(Age) AS avg_age
-	,	MAX(Age) AS max_age
-	,	MIN(Age) AS min_age
-	
-FROM SleepHealth..SleepHealth 
+	,	COUNT(GENDER) AS Count_of_gender
+	,	Avg(Age) AS Avg_age
+	,	MAX(Age) AS Max_age
+	,	MIN(Age) AS Min_age
+FROM sleep_health.sleephealth
 GROUP BY Occupation, Gender
 ORDER BY Occupation, Gender DESC
 
 
---The Average of all Category Group by Gender and Occupation
+-- Average Sleep, Physical Activity, Stress Level, Heart Rate and Daily Steps
 SELECT	Occupation
-	,	Gender
-	,	AVG(AGE) AS avg_age
-	,	AVG(Quality_of_sleep) AS avg_qty_of_sleep
-	,	AVG(Physical_Activity_Level) AS avg_physical_activity_level
-	,	AVG(Stress_Level) AS avg_stress_level
-	,	AVG(Heart_Rate) AS avg_hearth_rate
-	,	AVG(Daily_Steps) AS avg_daily_steps
-
-FROM SleepHealth..SleepHealth
+	,	Gender AS Count_of_gender
+	,	AVG(AGE) AS Avg_age
+	,	AVG(Quality_of_sleep) AS Avg_qty_of_sleep
+	,	AVG(Physical_Activity_Level) AS Avg_physical_activity_level
+	,	AVG(Stress_Level) AS Avg_stress_level
+	,	AVG(Heart_Rate) AS Avg_hearth_rate
+	,	AVG(Daily_Steps) AS Avg_daily_steps
+FROM sleep_health.sleephealth
 GROUP BY Occupation, Gender
 ORDER BY Occupation, Gender DESC
 
+-- Stress Level Of A Person With Sleeping Disorders
+SELECT 
+	Occupation
+,	Sleep_Disorder
+,	COUNT(Sleep_Disorder) AS Count_Disorder
+,	AVG(Stress_Level) AS Stess_level
+FROM sleep_health.sleephealth
+GROUP BY Occupation, Sleep_Disorder
+ORDER BY Occupation, Sleep_Disorder
 
---Stress Level compared Sleep Disorder
-SELECT	Occupation
-	,	Stress_Level
-	,	COUNT(Sleep_Disorder) AS quantity_of_sleep_disorder
-FROM SleepHealth..SleepHealth
-WHERE Sleep_Disorder != 'None'
-GROUP BY  Occupation ,Stress_Level
-ORDER BY  Occupation
+-- Physical Activity Of A Person With Sleeping Disorders
+SELECT 
+	Occupation
+,	Sleep_Disorder
+,	COUNT(Sleep_Disorder) AS Count_Disorder
+,	AVG(Physical_Activity_Level) AS Physical_Activity_Level
+FROM sleep_health.sleephealth
+GROUP BY Occupation, Sleep_Disorder
+ORDER BY Occupation, Sleep_Disorder
 
+-- Quality Of Sleep Of A Person With Sleeping Disorders
+SELECT 
+	Occupation
+,	Sleep_Disorder
+,	COUNT(Sleep_Disorder) AS Count_Disorder
+,	AVG(Quality_of_Sleep) AS Quality_of_sleep
+FROM sleep_health.sleephealth
+GROUP BY Occupation, Sleep_Disorder
+ORDER BY  Occupation, Sleep_Disorder
 
---Physical Activity  Compared to Sleep Disorder
-SELECT	Occupation
-	,	Physical_Activity_Level
-	,	COUNT(Sleep_Disorder) AS quantity_of_sleep_disorder
-FROM SleepHealth..SleepHealth
-WHERE Sleep_Disorder != 'None'
-GROUP BY Occupation, Physical_Activity_Level
-ORDER BY Occupation
-
-
---Quality of Sleep Compared to  Sleep Disorder
-SELECT	Occupation
-	,	Quality_of_Sleep
-	,	COUNT(Sleep_Disorder) AS quantity_of_sleep_disorder
-FROM SleepHealth..SleepHealth
-WHERE Sleep_Disorder != 'None'
-GROUP BY Occupation, Quality_of_Sleep
-ORDER BY Occupation
-
-
---Count Sleep Disorder Group by Gender
+-- Percentage Of A Person With Sleeping Disorder Group By Gender
 SELECT	
 		Gender
-	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
 	,	Sleep_Disorder
-	,	CAST(COUNT(Sleep_Disorder) AS FLOAT) / CAST(SUM(COUNT(Sleep_Disorder)) OVER (PARTITION  BY Gender)  AS FLOAT) AS Percentage
-FROM SleepHealth..SleepHealth
+	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
+	,	(COUNT(Sleep_Disorder) / SUM(COUNT(Sleep_Disorder))  OVER (PARTITION  BY Gender) )*100 AS Percentage
+FROM sleep_health.sleephealth
 GROUP BY GENDER, Sleep_Disorder
 ORDER BY Gender DESC, Count_Sleep_Disorder DESC
 
-
---Count of Sleep Disorder Group By Occupation with Percentage Disorder
-SELECT	
-		Occupation
-	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
-	,	Sleep_Disorder
-	,	CAST(COUNT(Sleep_Disorder) AS FLOAT) / CAST(SUM(COUNT(Sleep_Disorder)) OVER (PARTITION BY OCCUPATION) AS FLOAT) AS Percentage
-FROM SleepHealth..SleepHealth
-GROUP BY Occupation, Sleep_Disorder
-ORDER BY Occupation, Count_Sleep_Disorder	DESC
-
-
---Count of Sleep Disorder Group by Occupation
-SELECT	Occupation
-	,	Sleep_Disorder
-	,	COUNT(Sleep_Disorder) AS count_sleep_disorder
-
-FROM SleepHealth..SleepHealth
-GROUP BY Occupation, Sleep_Disorder
-
-
---Count of Sleep Disorder Insomnia Group by Occupationn
+-- Sleep Disorder Group By Occupation
 SELECT	
 		Occupation
 	,	Sleep_Disorder
 	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
-FROM SleepHealth..SleepHealth
+	,	(COUNT(Sleep_Disorder) / SUM(COUNT(Sleep_Disorder)) OVER (PARTITION BY OCCUPATION))*100 AS Percentage
+FROM sleep_health.sleephealth
+GROUP BY Occupation, Sleep_Disorder
+ORDER BY Occupation, Count_Sleep_Disorder DESC
+
+-- Insomnia Group By Occupation
+SELECT	
+		Occupation
+	,	Sleep_Disorder
+	,	COUNT(Sleep_Disorder) AS Count
+FROM sleep_health.sleephealth
 WHERE Sleep_Disorder = 'Insomnia'
 GROUP BY Occupation, Sleep_Disorder
-ORDER BY  Count_Sleep_Disorder	DESC
+ORDER BY  Count	DESC
 
-
---Count of Sleep Apnea Group by Occupation
+-- Sleep Apnea Per Occupation
 SELECT	
 		Occupation
 	,	Sleep_Disorder
-	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
-
-FROM SleepHealth..SleepHealth
+	,	COUNT(Sleep_Disorder) AS Count
+FROM sleep_health.sleephealth
 WHERE Sleep_Disorder = 'Sleep apnea'
 GROUP BY Occupation, Sleep_Disorder
-ORDER BY  Count_Sleep_Disorder	DESC
+ORDER BY  Count	DESC
 
-
---Count of Healty Group by Occupation
+-- None Sleep Disorder per Occupation
 SELECT	
 		Occupation
 	,	Sleep_Disorder
-	,	COUNT(Sleep_Disorder) AS Count_Sleep_Disorder
-
-FROM SleepHealth..SleepHealth
+	,	COUNT(Sleep_Disorder) AS Count
+FROM sleep_health.sleephealth
 WHERE Sleep_Disorder = 'None'
 GROUP BY Occupation, Sleep_Disorder
-ORDER BY  Count_Sleep_Disorder	DESC
+ORDER BY  Count	DESC
 
+-- Average Age Of Sleeping Disorder
+SELECT 
+	Sleep_Disorder
+,	ROUND(AVG(AGE),0) AS Age
+FROM sleep_health.sleephealth
+GROUP BY Sleep_Disorder
 
---Count of Disorder Group by Age
-
-SELECT	Sleep_Disorder
-	,	AGE
-	,	COUNT(AGE) AS count_age
-
-FROM SleepHealth..SleepHealth
-GROUP BY Sleep_Disorder, Age
-ORDER BY Sleep_Disorder, AGE DESC
- 
-
---Count of Genders
-SELECT	Gender
-	,	COUNT(GENDER) AS Count_Gender
-	,	CAST(COUNT(GENDER) AS FLOAT) / CAST((SELECT COUNT(GENDER) FROM SleepHealth) AS FLOAT)  AS Percentage
-FROM SleepHealth..SleepHealth
+-- Count Of Genders
+SELECT
+	GENDER
+,	COUNT(Gender) AS Count_Gender
+,	(COUNT(Gender) / SUM(COUNT(Gender)) OVER ()) * 100 AS Percentage
+FROM sleep_health.sleephealth
 GROUP BY GENDER
-ORDER BY count_gender DESC
 
-
---Count of Genders Group By Occupation
+-- Count of Genders Group By Occupation
 SELECT	Occupation
 	,	Gender
-	,	COUNT(GENDER) AS Count_Gender
-FROM SleepHealth..SleepHealth
-GROUP BY Occupation, Gender
+	,	COUNT(Gender) AS Count_Gender
+FROM sleep_health.sleephealth
+GROUP BY Occupation , Gender
 ORDER BY Occupation, Gender DESC
 
-
---BMI Category Group by Gender 
+-- BMI Category Group by Gender 
 SELECT	BMI_Category
 	,	Gender
 	,	COUNT(Gender) AS Count_Gender
-	,	CAST(COUNT(Gender) AS FLOAT) / CAST(SUM(COUNT(Gender)) OVER (PARTITION BY BMI_Category) AS FLOAT) AS Percentage
-FROM SleepHealth..SleepHealth
+	,	(COUNT(Gender)  / SUM(COUNT(Gender)) OVER (PARTITION BY Gender))*100  AS Percentage
+FROM sleep_health.sleephealth 
 GROUP BY BMI_Category, Gender
 ORDER BY BMI_Category, Gender DESC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
